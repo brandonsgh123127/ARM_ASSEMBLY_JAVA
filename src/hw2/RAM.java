@@ -6,6 +6,10 @@ package hw2;
 public class RAM {
     private int[] rs;
     
+    /*
+    Keeps track of pointer....
+    */
+    
     public RAM(int size, int bytes){
         rs = new int[size*8*bytes];  //size * bits
     }

@@ -4,6 +4,7 @@ package hw2;
 public class ARM {
     private RegisterBank rb;
     private RAM mb;
+    private int sp = 4;
     /*
     size_reg- how many bytes
     bits_reg- how many bits in the register
@@ -111,10 +112,39 @@ public class ARM {
        //Finally sets shiftBit value to array and sets registry
        shiftBit.set(RntoBits);
        rb.set(Rd, shiftBit);
+       mb.set(rb.get(Rd), sp); //Sets in RAM value at original offset of 4
     }
     
+    //Store Rd into Rn with an offset ammount, and pre, !
     public void str(int Rd, int Rn, int o, boolean pre, boolean mod_pre){
-        //TO DO
+        if(pre){//if a pre-Offset
+            if(mod_pre == false){//If no exclamation point
+                RegisterBank rb1 = new RegisterBank(15,32);
+                sp += o;
+                mov(14,mb.get(4, o).get()[0],o);
+                mb.set(rb.get(Rd),sp);//sets value in ram to Rn
+                rb1.set(Rd,mb.get(4, sp));
+                sp -= o;
+            }
+            else{
+                RegisterBank rb1 = new RegisterBank(15,32);
+                mov(14,mb.get(4, o).get()[0],o);
+                mb.set(rb.get(Rd),o);//sets value in ram to Rn
+                rb1.set(Rd,mb.get(4, o));
+                rb = rb1;
+            }
+        }
+        else{//If a post-Offset
+            if(mod_pre == false){
+                RegisterBank rb1 = new RegisterBank(15,32);
+                mb.set(rb.get(Rn),o);//sets value in ram to Rn
+                rb.set(Rd,mb.get(4, o));
+                rb = rb1;
+            }
+            else{
+                 
+            }
+        }
     }
     
     public void ldr(int Rd, int Rn, int o, boolean pre, boolean mod_pre){
@@ -126,7 +156,24 @@ public class ARM {
     }
     
     public void print(){
-        //TO DO
+        int track = 0;
+        try{
+            for(int i = 0; rb.get(i).get() != null; i++){
+                track++;
+                System.out.print("Register " + i + ":  ");
+                for(int j = 0; j < rb.get(i).get().length;j++){
+                    System.out.print(rb.get(i).get()[j]);
+                }
+                System.out.println();
+                
+                }
+        }
+        catch(IndexOutOfBoundsException e){
+            
+            
+        }
+      
+       
     }
     
 }
