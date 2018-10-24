@@ -4,19 +4,21 @@ package hw2;
 public class ARM {
     private RegisterBank rb;
     private RAM mb;
-    private int sp = 4;
-    /*
-    size_reg- how many bytes
-    bits_reg- how many bits in the register
-    */
+    public int sp = 8*32;
+    private int pc = 0;
+    private final int bits;
+    private final int registers;
+    private final int size_ram;
+    
     public ARM(int size_reg, int bits_reg, int size_ram, int bytes_ram){
         rb = new RegisterBank(size_reg,bits_reg);
         mb = new RAM(size_ram,bytes_ram);
+        registers=size_reg;
+        bits = bits_reg;
+        this.size_ram = size_ram;
     }
     /*
-    Where Rd is register and Rn is a value in bits, and a shift in bits,
-    SO FAR- ONLY CONVERTS NUMBER TO BINARY VALUE INTO REGISTRY
-    
+    Where Rd is register and Rn is a value in bits, and a shift in bits,    
     */
     public void mov(int Rd, int Rn, int bitshift){
         System.out.println("MOV...");
@@ -31,25 +33,13 @@ public class ARM {
             |  |_|  |   ___|  |___
             |_______|   |________|
         */
-        
         //Both variables used to store into register
-        Word Rn1 = new Word(32);
-        int[] RntoBits  = new int[Rn1.bits];
-        //Used to convert to binary value
-        String s = Long.toBinaryString(Rn);
-        
-        
-        //Loop that allows for binary representation
-        for(int i = 0; i< s.length(); i++){
-            //Sets a reverse value to end of array
-            RntoBits[RntoBits.length-1-i]= Integer.valueOf(s.substring(s.length()-1-i, s.length()-1-(i-1)));
-        }
+        Word Rn1 = new Word(bits);
+        int[] RntoBits  = numtoBits(Rn1,Rn);
         //Sets value of word to Rn in bit form
         Rn1.set(RntoBits);
-        //Set the register value into Rd for now
+        //Set the register value into Rd for now....
         rb.set(Rd,Rn1);
-        
-        
         /*
         PT 2.  SHIFT BITS!!!!!!!
             |       ___ |---->
@@ -60,7 +50,123 @@ public class ARM {
             placed in register.
         */
         //new Word set up
-        Word shiftBit = new Word(Rn1.bits);
+        Word shiftBit = new Word(bits);
+        //Calls method to shiftBits
+       RntoBits = shiftBits(Rn1,bitshift);
+       //Finally sets shiftBit value to array and sets registry
+       shiftBit.set(RntoBits);
+       rb.set(Rd, shiftBit);
+       pc++; //Increment Program Counter
+    }
+    
+    //Store Rd into Rn with an offset ammount, and pre, !
+    public void str(int Rd, int Rn, int o, boolean pre, boolean mod_pre){
+        //Setting up Rn1 to have Rn value in bits
+        Word Rn1 = new Word(bits);
+        Rn1.set(rb.get(Rd).get());
+        //
+        if(pre){//if a pre-Offset
+            if(mod_pre == false){//If no exclamation point
+                sp += (o*8);//sp + offset in bits
+                mb.set(Rn1, sp + (Rd * bits)); //set RAM to have value in it at position
+                sp -= (o*8);
+            }
+            else{
+                sp += (o*8);//sp + offset in bits
+                mb.set(Rn1, sp + (Rd * bits));
+            }
+        }
+        else{//If a post-Offset
+            if(mod_pre == false){
+                mb.set(Rn1, sp + (Rd * bits));
+                sp += (o*8);//sp + offset in bits
+            }
+            else{
+                throw new NullPointerException();
+            }
+
+        }        
+        pc++;//program counter++
+    }
+                      //reg,   sp,   offset,    pre,   !
+    public void ldr(int Rd, int Rn, int o, boolean pre, boolean mod_pre){
+        //For Loop that will group each amount of bits to each register.
+        if(pre){//If it is a pre-offset
+            if(mod_pre){
+                sp+= (o*8);
+                rb.set(Rd, mb.get(bits / 8, sp + (Rd*bits)));
+            }
+            else{
+                sp+= (o*8);
+                rb.set(Rd, mb.get(bits / 8, sp + (Rd*bits)));
+                sp-= (o*8);
+            }
+        }
+        else{ //If it is a post offset
+            sp+= (o*8);
+            rb.set(Rd, mb.get(bits / 8, sp + (Rd*bits)));
+        }
+        pc++;//Program counter increment
+        
+    }
+    
+    public void add(int Rd, int Rn, int Rc){
+        
+        pc++;
+    }
+    
+    public void print(){
+        int track = 0;
+        int[] val;        
+        try{
+            for(int i = 0; i <= registers; i++){
+                val = rb.get(track).get();
+                System.out.print("Register " + track + ":  ");
+                for(int j = 0; j < bits;j++){
+                    System.out.print(val[j]);
+                }
+                System.out.println();
+                
+                track++;
+                }
+        }
+        catch(IndexOutOfBoundsException e){
+        }
+        
+        System.out.println("SP:  " + sp);
+        System.out.println("PC:  " + pc);
+      
+       
+    }
+    
+    
+    /*
+    Converts number to Bits...
+    Does NOT shift...
+    */
+    public int[] numtoBits(Word w, int Rn){
+        int[] RntoBits  = new int[w.bits];
+        //Used to convert to binary value
+        String s = Long.toBinaryString(Rn);
+        
+        //Loop that allows for binary representation
+        for(int i = 0; i< s.length(); i++){
+            //Sets a reverse value to end of array
+            RntoBits[RntoBits.length-1-i]= Integer.valueOf(s.substring(s.length()-1-i, s.length()-1-(i-1)));
+        }
+        
+                
+        
+        return RntoBits;
+    }
+    
+    /*
+    Shifts the bits of a Word....
+    */
+    
+    public int[] shiftBits(Word w, int bitshift){
+        int[] RntoBits = w.get();
+        
         /*
         Shifting left!
         */
@@ -83,13 +189,12 @@ public class ARM {
                     }
                }
                RntoBits[RntoBits.length-1]= temp;               
-            }
-       } 
+           }
+       }
        /*
        Shifting Right!
        */
        else{ //SHIFTING RIGHT...
-           
             //Count through each shift
            for(int i = 0; i < bitshift; i++){
                //Loop to rotate each time until it reaches [1]
@@ -109,71 +214,7 @@ public class ARM {
             }
        }
        
-       //Finally sets shiftBit value to array and sets registry
-       shiftBit.set(RntoBits);
-       rb.set(Rd, shiftBit);
-       mb.set(rb.get(Rd), sp); //Sets in RAM value at original offset of 4
-    }
-    
-    //Store Rd into Rn with an offset ammount, and pre, !
-    public void str(int Rd, int Rn, int o, boolean pre, boolean mod_pre){
-        if(pre){//if a pre-Offset
-            if(mod_pre == false){//If no exclamation point
-                RegisterBank rb1 = new RegisterBank(15,32);
-                sp += o;
-                mov(14,mb.get(4, o).get()[0],o);
-                mb.set(rb.get(Rd),sp);//sets value in ram to Rn
-                rb1.set(Rd,mb.get(4, sp));
-                sp -= o;
-            }
-            else{
-                RegisterBank rb1 = new RegisterBank(15,32);
-                mov(14,mb.get(4, o).get()[0],o);
-                mb.set(rb.get(Rd),o);//sets value in ram to Rn
-                rb1.set(Rd,mb.get(4, o));
-                rb = rb1;
-            }
-        }
-        else{//If a post-Offset
-            if(mod_pre == false){
-                RegisterBank rb1 = new RegisterBank(15,32);
-                mb.set(rb.get(Rn),o);//sets value in ram to Rn
-                rb.set(Rd,mb.get(4, o));
-                rb = rb1;
-            }
-            else{
-                 
-            }
-        }
-    }
-    
-    public void ldr(int Rd, int Rn, int o, boolean pre, boolean mod_pre){
-        //TO DO
-    }
-    
-    public void add(int Rd, int Rn, int Rc){
-        
-    }
-    
-    public void print(){
-        int track = 0;
-        try{
-            for(int i = 0; rb.get(i).get() != null; i++){
-                track++;
-                System.out.print("Register " + i + ":  ");
-                for(int j = 0; j < rb.get(i).get().length;j++){
-                    System.out.print(rb.get(i).get()[j]);
-                }
-                System.out.println();
-                
-                }
-        }
-        catch(IndexOutOfBoundsException e){
-            
-            
-        }
-      
-       
+       return RntoBits;
     }
     
 }
