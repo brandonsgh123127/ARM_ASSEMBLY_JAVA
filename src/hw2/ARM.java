@@ -2,10 +2,10 @@
 package hw2;
 
 public class ARM {
-    private RegisterBank rb;
-    private RAM mb;
+    public RegisterBank rb;
+    public RAM mb;
     public int sp = 8*32;
-    private int pc = 0;
+    public int pc = 0;
     private final int bits;
     private final int registers;
     private final int size_ram;
@@ -64,6 +64,8 @@ public class ARM {
         //Setting up Rn1 to have Rn value in bits
         Word Rn1 = new Word(bits);
         Rn1.set(rb.get(Rd).get());
+        
+        
         //
         if(pre){//if a pre-Offset
             if(mod_pre == false){//If no exclamation point
@@ -111,7 +113,30 @@ public class ARM {
     }
     
     public void add(int Rd, int Rn, int Rc){
+        int[] RnBits = rb.get(Rn).get();
+        int[] RcBits = rb.get(Rc).get();
+        int[] RnDest = new int[RnBits.length];
+        Word w = new Word(bits);
+        //Loop that doesn't carry...
+        for(int i = 0; i < RnBits.length; i++){
+            RnDest[i] = RnBits[i] + RcBits[i];
+        }
         
+        //Loop that carries over numbers
+        for(int i = RnDest.length-1; i >=0; i--){
+            if(RnDest[i] > 1){
+                RnDest[i]-=2;
+                try{
+                RnDest[i-1]+=1;
+                }
+                catch(Exception e){
+                    
+                }
+            }
+            w.set(RnDest);
+            rb.set(Rd, w);
+            
+        }
         pc++;
     }
     
