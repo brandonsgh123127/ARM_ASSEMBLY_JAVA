@@ -1,5 +1,6 @@
 package hw2;
 
+import java.awt.Color;
 import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -58,7 +59,6 @@ public class HW2 extends JFrame {
         //manager.add(startup);
         startup.setSize(d.width,d.height);
         startup.setLocation(300,200);
-        
         //Creating Objects for use
         JLabel size_reg_label = new JLabel("How many registers?");
         TextField size_register = new TextField();
@@ -122,9 +122,10 @@ public class HW2 extends JFrame {
         JFrame main = new JFrame("ARM_IN_JAVA");
         main.setSize(d.width,d.height);
         main.setLocation(300,200);
+        main.setBackground(Color.BLACK);
         
         
-        //Creates register text fields
+        //Creates register text fields on screen
         TextField[] registers = new TextField[size_reg];
         JLabel[] reg_labels = new JLabel[size_reg]; //labels
         int count = 15;
@@ -163,11 +164,11 @@ public class HW2 extends JFrame {
         JLabel Pc_label = new JLabel("Pc:" + a.pc);
         
         //Setting Bounds/Size
-        MOV.setBounds(100, 1000, 150, 50);
-        STR.setBounds(300, 1000, 150, 50);
-        LDR.setBounds(500, 1000, 150, 50);
-        ADD.setBounds(700, 1000, 150, 50);
-        EXIT.setBounds(1700, 1000, 150, 50);
+        MOV.setBounds(100, 800, 150, 50);
+        STR.setBounds(300, 800, 150, 50);
+        LDR.setBounds(500, 800, 150, 50);
+        ADD.setBounds(700, 800, 150, 50);
+        EXIT.setBounds(1700, 800, 150, 50);
         ENTER.setBounds(900, 300, 200, 50);
         Rd.setBounds(800, 200, 150, 25);
         Rd_label.setBounds(800, 150, 25, 25);
@@ -180,10 +181,11 @@ public class HW2 extends JFrame {
         pre.setBounds(1600, 200, 150, 50);
         mod_pre.setBounds(1800, 200, 150, 50);
         Rc.setBounds(1200, 200, 150, 25);
-        Rc_label.setBounds(1200, 150, 50, 25);
-        Sp_label.setBounds(1700, 800, 50, 25);
-        Pc_label.setBounds(1700, 830, 50, 25);
+        Rc_label.setBounds(1200, 100, 50, 25);
+        Sp_label.setBounds(1700, 600, 50, 25);
+        Pc_label.setBounds(1700, 700, 50, 25);
 
+        
         //Initially Create the timer...
          timer = new Timer(1000, new ActionListener(){      // Timer 1 second
             public void actionPerformed(ActionEvent e) {
@@ -201,12 +203,12 @@ public class HW2 extends JFrame {
 
             }
         });
-         
+         //Starting timer to update
          timer.start();
         
         
         //ADDING ACTIONS FOR EACH BUTTON
-        
+        //MOV
         MOV.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -226,6 +228,7 @@ public class HW2 extends JFrame {
                 operation = "MOV";
             }
         });
+        //STR
         STR.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -245,6 +248,7 @@ public class HW2 extends JFrame {
                 operation = "STR";
             }
         });
+        //LDR
         LDR.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -263,6 +267,7 @@ public class HW2 extends JFrame {
                 Rc_label.setVisible(false);
                 operation = "LDR";            }
         });
+        //ADD
         ADD.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -283,6 +288,7 @@ public class HW2 extends JFrame {
                 operation = "ADD";
             }
         });
+        //EXIT; closes screen
         EXIT.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -292,6 +298,7 @@ public class HW2 extends JFrame {
                 }
             }
         });
+        //ENTER;  CHECKS THE OPERATION STRING...
         ENTER.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
